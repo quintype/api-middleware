@@ -1,5 +1,5 @@
 const apiClients = require("@quintype/framework/server/api-client");
-const { get } =  require("lodash");
+const get =  require("lodash/get");
 const { getPagePath } = require("../data/collection");
 
 const { Collection, Entity } = apiClients;

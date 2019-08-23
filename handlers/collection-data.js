@@ -1,6 +1,6 @@
 
 const { Collection } = require("../server/api");
-const { get } = require("lodash");
+const get = require("lodash/get");
 const { DEFAULT_STORY_FIELDS } = require("../constants/constants");
 
 function isBundle(collection) {
