@@ -1,0 +1,29 @@
+{
+  "name": "@quintype/api-middleware",
+  "version": "1.0.0",
+  "description": "Middleware between App and sketches APIs",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/quintype/api-middleware.git"
+  },
+  "keywords": [
+    "quintype"
+  ],
+  "author": "Quintype Developers <dev-core@quintype.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@quintype/framework": "^3.9.0",
+    "@quintype/backend": "1.20.4"
+  },
+  "bugs": {
+    "url": "https://github.com/quintype/api-middleware/issues"
+  },
+  "homepage": "https://github.com/quintype/api-middleware#readme",
+  "devDependencies": {
+    "loadash": "^1.0.0"
+  }
+}
