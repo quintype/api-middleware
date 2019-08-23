@@ -1,23 +1,26 @@
 
-const { Collection } = require("../api");
+const { Collection } = require("../server/api");
 const { get } = require("lodash");
-const { FIELDS_FOR_MOBILE} = require("../constants");
+const { DEFAULT_STORY_FIELDS } = require("../constants/constants");
 
 function isBundle(collection) {
   const type = get(collection, ["metadata", "type", "0", "name"], null);
   return type === "bundle";
 }
+
 function ignoreChildrenOfBundle(purgeFlag, item) {
   return purgeFlag && isBundle(item);
 }
+
 function ignoreChildrenOfMagazine(purgeFlag, item) {
   return purgeFlag && isMagazine(item);
 }
+
 function isMagazine(item) {
   return !!get(item, ["metadata", "entities", "collectionEntities", "magazine", "0"]);
 }
 
-function getStoryObject(story, fieldsReqd = FIELDS_FOR_MOBILE) {
+function getStoryObject(story, fieldsReqd = DEFAULT_STORY_FIELDS) {
   const storyObject = { type: "story" };
   fieldsReqd.forEach(field => {
     if (story.story[field]) {
@@ -26,6 +29,7 @@ function getStoryObject(story, fieldsReqd = FIELDS_FOR_MOBILE) {
   });
   return storyObject;
 }
+
 function getCollectionObject(collectionObject, items) {
   const refactoredCollectionObject = {
     type: collectionObject["type"],
@@ -44,6 +48,7 @@ function getCollectionObject(collectionObject, items) {
   };
   return refactoredCollectionObject;
 }
+
 function convertInteger(num) {
   /* number and null and undefined will be returned as it is,
      undefined will be returned as 0,
@@ -51,6 +56,7 @@ function convertInteger(num) {
   */
   return typeof num === "number" || num === null ? num : isNaN(num) ? 0 : parseInt(num);
 }
+
 function getFetchParams(item, collectionParameters, params) {
   const numberofStoriesPerCollection =
     (collectionParameters["number_of_stories_inside_collection_to_show"] &&
@@ -159,6 +165,7 @@ async function cumulateCollection(client, collection, params = {}) {
   const refactoredCollectionObject = getCollectionObject(collectionObject, newItems);
   return refactoredCollectionObject;
 }
+
 async function collectionHandler(req, res, next, { config, client, params }) {
   const { slug: collectionSlug, limit, offset, depth = 2 } = req.query;
   const purgeBundleItems = !!(req.query["exclude-bundle-items"] && req.query["exclude-bundle-items"] === "true");
