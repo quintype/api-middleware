@@ -7,8 +7,7 @@ async function appConfigRequestHandler(req, res, next, { config }) {
     "publisher-name": config["publisher-name"],
     "cdn-image": config["cdn-image"],
     copyright: config["publisher-settings"]["copyright"],
-    "static-page-urls": config["static-page-urls"],
-    sections: config["sections"]
+    "static-page-urls": config["static-page-urls"]
   };
   res
     .header("Cache-Control", "public,max-age=15,s-maxage=900,stale-while-revalidate=7200,stale-if-error=14400")

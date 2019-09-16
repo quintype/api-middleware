@@ -78,7 +78,7 @@ function getFetchParams(item, collectionParameters, params) {
   } else if (numberofStoriesPerCollection) {
     fetchParams.limit = numberofStoriesPerCollection;
     fetchParams["associated-metadata"]["number_of_stories_to_show"] = numberofStoriesPerCollection;
-    fetchParams["item-type"] = "story";
+    fetchParams["item-type"] = "collection";
   }
   return fetchParams;
 }
