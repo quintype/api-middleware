@@ -66,7 +66,7 @@ function getFetchParams(item, collectionParameters, params) {
     null;
 
     const numberOfCollection = convertInteger(collectionParameters['number_of_collections_to_show']) || null;
-    const numberOfStories = convertInteger(collectionParameters['number_of_stories_to_show']) || null;
+    const numberOfStories = convertInteger(collectionParameters['number_of_stories_to_show']) || 5;
   const fetchParams = {
     ...params,
     "associated-metadata": item["associated-metadata"],
@@ -82,11 +82,11 @@ function getFetchParams(item, collectionParameters, params) {
     fetchParams["item-type"] = "story";
   } else if (numberOfCollection && numberOfStoriesPerCollection) {
     fetchParams.limit = numberOfStoriesPerCollection;
+    fetchParams["associated-metadata"]["number_of_collections_to_show"] = numberOfCollection;
     fetchParams["associated-metadata"]["number_of_stories_inside_collection_to_show"] = numberOfStoriesPerCollection;
     fetchParams["item-type"] = "collection";
   } else if(numberOfStories){
     fetchParams.limit = numberOfStories;
-    fetchParams["associated-metadata"]["number_of_stories_to_show"] = numberOfStoriesPerCollection;
     fetchParams["item-type"] = "story";
   }
   return fetchParams;
@@ -154,23 +154,29 @@ async function cumulateCollection(client, collection, params = {}) {
           ignoreChildrenOfBundle(params.purgeBundleItems, item) ||
           ignoreChildrenOfMagazine(params.purgeMagazineItems, item)
         ) {
+          console.log("coming inside item-type condition if part and story slug is == " , item.slug);
           if (item["items"]) {
             /* If child items of a bundle or magazine are already fetched, purge them it reduce the download size */
             delete item["items"];
           }
           return new Promise(resolve => resolve(item));
         } else {
-          return cumulateCollection(client, item, getFetchParams(item, collectionParameters, params));
+          const childAssociatedMetadata = item["associated-metadata"];
+          return childAssociatedMetadata?
+           cumulateCollection(client, item, getFetchParams(item, childAssociatedMetadata, params)) :
+           cumulateCollection(client, item, getFetchParams(item, collectionParameters, params));
         }
       } else if (item.type === "story" || item.type === 'breaking-news') {
+        console.log("coming inside item-type condition else-if part and story slug is == " , item.story.slug);
         return new Promise(resolve =>{
-          resolve(collection.slug==='breaking-news'? 
-                    getBreakingNewsStory(item): 
-                    params.storyfields? getStoryObject(item, params.storyfields): 
+          resolve(collection.slug==='breaking-news'?
+                    getBreakingNewsStory(item):
+                    params.storyfields? getStoryObject(item, params.storyfields):
                     getStoryObject(item))
           }
         );
       } else {
+        console.log("coming inside item-type condition else part and story slug is == " , item.slug);
         return new Promise(resolve => resolve(item));
       }
     })
@@ -194,6 +200,7 @@ async function collectionHandler(req, res, next, { config, client, params }) {
     purgeMagazineItems
   };
   const collectionObject = await Collection.getCollectionBySlug(client, collectionSlug, initialParams, { depth });
+  console.log("collection Object is " , collectionObject);
   const collectionDataSet = await cumulateCollection(client, collectionObject.asJson(), initialParams);
 
   const collectionRefactoredData = {

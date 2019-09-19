@@ -1,4 +1,4 @@
-const { Author } =  require("@quintype/backend");
+const { Author, Story } =  require("@quintype/backend");
 const { DEFAULT_STORY_FIELDS } = require("../constants/constants");
 
 /**
@@ -53,6 +53,27 @@ async function authorsRequestHandler(req, res, next, { client }) {
     .json(advancedSearchData);
   }
 
+async function tagRequestHandler(req, res, next, { client }){
+        const tagName = req.query["tag"];
+        const limit = req.query["limit"] || 20;
+        const offset = req.query["offset"] || 0;
+        const tagCollection = await Story.getStories(client , "top" , {
+                "tag": tagName,
+                limit: limit,
+                offset:offset,
+                 "fields":  DEFAULT_STORY_FIELDS 
+        });
+        console.log("tag collection is ==== " , tagCollection);
+        const tagStory = tagCollection.stories.map(story => getRefactoredStoryObject(story));
+        const tagData = {
+                "items" :tagStory
+            };
+        res
+        .header("Cache-Control", "public,max-age=15,s-maxage=900,stale-while-revalidate=7200,stale-if-error=14400")
+        .header("Vary", "Accept-Encoding")
+        .json(tagData);
+   }
+
   function getRefactoredStoryObject(story){
     const refactoredStoryObject = {
         "type" : "story",
@@ -73,4 +94,4 @@ async function authorsRequestHandler(req, res, next, { client }) {
     return refactoredStoryObject;
   }
 
-  module.exports = { authorsRequestHandler, advancedSearchRequestHandler};
+  module.exports = { authorsRequestHandler, advancedSearchRequestHandler, tagRequestHandler};
