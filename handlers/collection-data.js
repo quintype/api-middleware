@@ -29,7 +29,9 @@ function getStoryObject(story, fieldsReqd = DEFAULT_STORY_FIELDS) {
   });
   return storyObject;
 }
-
+function getBreakingNewsStory(story, fieldsReqd = DEFAULT_STORY_FIELDS) {
+  return getRefactoredStoryObject(story.story);
+}
 function getCollectionObject(collectionObject, items) {
   const refactoredCollectionObject = {
     type: collectionObject["type"],
@@ -58,10 +60,13 @@ function convertInteger(num) {
 }
 
 function getFetchParams(item, collectionParameters, params) {
-  const numberofStoriesPerCollection =
+  const numberOfStoriesPerCollection =
     (collectionParameters["number_of_stories_inside_collection_to_show"] &&
       convertInteger(collectionParameters["number_of_stories_inside_collection_to_show"])) ||
     null;
+
+    const numberOfCollection = convertInteger(collectionParameters['number_of_collections_to_show']) || null;
+    const numberOfStories = convertInteger(collectionParameters['number_of_stories_to_show']) || null;
   const fetchParams = {
     ...params,
     "associated-metadata": item["associated-metadata"],
@@ -75,10 +80,14 @@ function getFetchParams(item, collectionParameters, params) {
     fetchParams.limit = 5;
     fetchParams["associated-metadata"]["number_of_stories_to_show"] = 5;
     fetchParams["item-type"] = "story";
-  } else if (numberofStoriesPerCollection) {
-    fetchParams.limit = numberofStoriesPerCollection;
-    fetchParams["associated-metadata"]["number_of_stories_to_show"] = numberofStoriesPerCollection;
+  } else if (numberOfCollection && numberOfStoriesPerCollection) {
+    fetchParams.limit = numberOfStoriesPerCollection;
+    fetchParams["associated-metadata"]["number_of_stories_inside_collection_to_show"] = numberOfStoriesPerCollection;
     fetchParams["item-type"] = "collection";
+  } else if(numberOfStories){
+    fetchParams.limit = numberOfStories;
+    fetchParams["associated-metadata"]["number_of_stories_to_show"] = numberOfStoriesPerCollection;
+    fetchParams["item-type"] = "story";
   }
   return fetchParams;
 }
@@ -153,9 +162,13 @@ async function cumulateCollection(client, collection, params = {}) {
         } else {
           return cumulateCollection(client, item, getFetchParams(item, collectionParameters, params));
         }
-      } else if (item.type === "story") {
-        return new Promise(resolve =>
-          resolve(params.storyfields ? getStoryObject(item, params.storyfields) : getStoryObject(item))
+      } else if (item.type === "story" || item.type === 'breaking-news') {
+        return new Promise(resolve =>{
+          resolve(collection.slug==='breaking-news'? 
+                    getBreakingNewsStory(item): 
+                    params.storyfields? getStoryObject(item, params.storyfields): 
+                    getStoryObject(item))
+          }
         );
       } else {
         return new Promise(resolve => resolve(item));
@@ -202,5 +215,26 @@ async function collectionHandler(req, res, next, { config, client, params }) {
     .header("Surrogate-Tag", (collectionObject.cacheKeys(config.asJson()["publisher-id"]) || []).join(" "))
     .json(collectionRefactoredData);
 }
+
+ function getRefactoredStoryObject(story){
+      console.log("story slug from breaking news from colleciton-data is " + story.slug);
+      const refactoredStoryObject = {
+          "type" : "story",
+          "id" : story["id"],
+          "hero-image-s3-key" : story["hero-image-s3-key"],
+          "headline" : story["headline"],
+          "authors" : story["authors"],
+          "alternative" : story["alternative"],
+          "hero-image-metadata" : story["hero-image-metadata"],
+          "slug" : story["slug"],
+          "subheadline" : story["subheadline"],
+          "author-name" : story["author-name"],
+          "url" : story["url"],
+          "last-published-at" : story["last-published-at"],
+          "access" : story["access"],
+          "tags":story["tags"]
+      }
+      return refactoredStoryObject;
+    }
 
 module.exports = { collectionHandler };
