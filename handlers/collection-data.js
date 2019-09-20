@@ -137,7 +137,10 @@ async function cumulateCollection(client, collection, params = {}) {
     ? filterItemType(collection, params["item-type"])
     : (await Collection.getCollectionBySlug(client, collection.slug, params)).asJson();
   if (params["associated-metadata"]) {
+    console.log("==========================", params)
+    console.log("**************************", collectionObject)
     collectionObject["associated-metadata"] = params["associated-metadata"];
+
   }
   const collectionParameters = params["associated-metadata"] || {};
   const numberofStories = numberofStoriesTobeReturned(collectionParameters);
@@ -150,6 +153,7 @@ async function cumulateCollection(client, collection, params = {}) {
   const newItems = await Promise.all(
     objectList.map(async item => {
       if (item.type === "collection" && item.slug) {
+        console.log("item ========================== " , item);
         if (
           ignoreChildrenOfBundle(params.purgeBundleItems, item) ||
           ignoreChildrenOfMagazine(params.purgeMagazineItems, item)
@@ -161,10 +165,10 @@ async function cumulateCollection(client, collection, params = {}) {
           }
           return new Promise(resolve => resolve(item));
         } else {
-          const childAssociatedMetadata = item["associated-metadata"];
-          return childAssociatedMetadata?
-           cumulateCollection(client, item, getFetchParams(item, childAssociatedMetadata, params)) :
-           cumulateCollection(client, item, getFetchParams(item, collectionParameters, params));
+          // const childParams = item["associated-metadata"] && Object.keys(item["associated-metadata"]).length ? item["associated-metadata"] : collectionParameters
+          const childParams = item["associated-metadata"];
+          return childParams ? cumulateCollection(client, item, getFetchParams(item, childParams, params)) :
+          cumulateCollection(client, item, getFetchParams(item, collectionParameters, params));
         }
       } else if (item.type === "story" || item.type === 'breaking-news') {
         console.log("coming inside item-type condition else-if part and story slug is == " , item.story.slug);

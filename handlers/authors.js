@@ -58,13 +58,12 @@ async function tagRequestHandler(req, res, next, { client }){
         const limit = req.query["limit"] || 20;
         const offset = req.query["offset"] || 0;
         const tagCollection = await Story.getStories(client , "top" , {
-                "tag": tagName,
+                "tag-slugs": tagName,
                 limit: limit,
                 offset:offset,
                  "fields":  DEFAULT_STORY_FIELDS 
         });
-        console.log("tag collection is ==== " , tagCollection);
-        const tagStory = tagCollection.stories.map(story => getRefactoredStoryObject(story));
+        const tagStory = tagCollection.map(story => getRefactoredStoryObject(story.story));        
         const tagData = {
                 "items" :tagStory
             };
