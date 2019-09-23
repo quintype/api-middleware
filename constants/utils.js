@@ -26,27 +26,18 @@ const DEFAULT_STORY_FIELDS = [
   "created-at",
   "authors",
   "metadata",
-  "linked-story-ids"
+  "linked-story-ids",
+  "access"
 ];
 
-function getRefactoredStoryObject(story) {
-  const refactoredStoryObject = {
-    type: "story",
-    id: story["id"],
-    "hero-image-s3-key": story["hero-image-s3-key"],
-    headline: story["headline"],
-    authors: story["authors"],
-    alternative: story["alternative"],
-    "hero-image-metadata": story["hero-image-metadata"],
-    slug: story["slug"],
-    subheadline: story["subheadline"],
-    "author-name": story["author-name"],
-    url: story["url"],
-    "last-published-at": story["last-published-at"],
-    access: story["access"],
-    tags: story["tags"]
-  };
-  return refactoredStoryObject;
+function getRefactoredStoryObject(story, fieldsReqd = DEFAULT_STORY_FIELDS) {
+    const storyObject = { type: "story" };
+    fieldsReqd.forEach(field => {
+      if (story[field]) {
+        storyObject[field] = story[field];
+      }
+    });
+    return storyObject;
 }
 
 module.exports = { DEFAULT_STORY_FIELDS, getRefactoredStoryObject };

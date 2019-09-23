@@ -1,4 +1,7 @@
-const { DEFAULT_STORY_FIELDS, getRefactoredStoryObject } = require("../constants/utils");
+const {
+  DEFAULT_STORY_FIELDS,
+  getRefactoredStoryObject
+} = require("../constants/utils");
 
 /**
  * This Handler is for getting the childItem for advanced-search
@@ -19,7 +22,9 @@ async function advancedSearchRequestHandler(req, res, next, { client }) {
     fields: storyfields
   });
   const advancedSearchStories = advancedSearch.items.map(story =>
-    getRefactoredStoryObject(story)
+    storyfields
+      ? getRefactoredStoryObject(story, storyfields)
+      : getRefactoredStoryObject(story)
   );
   const advancedSearchData = {
     "total-count": advancedSearch["total"],
