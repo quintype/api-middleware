@@ -21,7 +21,9 @@ async function authorsRequestHandler(req, res, next, { client }) {
     fields: storyfields
   });
   const stories = authorCollection.items.map(item =>
-    getRefactoredStoryObject(item.story)
+    storyfields ? 
+    getRefactoredStoryObject(item.story, storyfields)
+    : getRefactoredStoryObject(item.story)
   );
 
   const authorsData = {

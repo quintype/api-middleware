@@ -36,7 +36,21 @@ function getStoryObject(story, fieldsReqd = DEFAULT_STORY_FIELDS) {
 }
 
 function getBreakingNewsStory(story, fieldsReqd = DEFAULT_STORY_FIELDS) {
-  return getRefactoredStoryObject(story.story);
+  const storyObject = {
+    type: "story"
+  };
+  fieldsReqd.forEach(field => {
+    if (field === "slug") {
+      storyObject.slug = get(
+        story,
+        ["story", "metadata", "linked-story-slug"],
+        null
+      );
+    } else if (story.story[field]) {
+      storyObject[field] = story.story[field];
+    }
+  });
+  return storyObject;
 }
 
 function getCollectionObject(collectionObject, items) {
@@ -217,19 +231,26 @@ async function cumulateCollection(client, collection, params = {}) {
         }
       } else if (item.type === "story" || item.type === "breaking-news") {
         return new Promise(resolve => {
-          resolve(
-            collection.slug === "breaking-news"
-              ? getBreakingNewsStory(item)
-              : params.storyfields
-              ? getStoryObject(item, params.storyfields)
-              : getStoryObject(item)
-          );
+          if (collection.slug === "breaking-news") {
+            if (params.storyfields) {
+              resolve(getBreakingNewsStory(item, params.storyfields));
+            } else {
+              resolve(getBreakingNewsStory(item));
+            }
+          } else {
+            if (params.storyfields) {
+              resolve(getStoryObject(item, params.storyfields));
+            } else {
+              resolve(getStoryObject(item));
+            }
+          }
         });
       } else {
         return new Promise(resolve => resolve(item));
       }
     })
   );
+
   const refactoredCollectionObject = getCollectionObject(
     collectionObject,
     newItems
@@ -301,26 +322,6 @@ async function collectionHandler(req, res, next, { config, client, params }) {
       )
     )
     .json(collectionRefactoredData);
-}
-
-function getRefactoredStoryObject(story) {
-  const refactoredStoryObject = {
-    type: "story",
-    id: story["id"],
-    "hero-image-s3-key": story["hero-image-s3-key"],
-    headline: story["headline"],
-    authors: story["authors"],
-    alternative: story["alternative"],
-    "hero-image-metadata": story["hero-image-metadata"],
-    slug: story["slug"],
-    subheadline: story["subheadline"],
-    "author-name": story["author-name"],
-    url: story["url"],
-    "last-published-at": story["last-published-at"],
-    access: story["access"],
-    tags: story["tags"]
-  };
-  return refactoredStoryObject;
 }
 
 module.exports = { collectionHandler };
