@@ -20,16 +20,6 @@ async function bulkStoriesByExternalId(req, res) {
         return story;
       })
       .map(story => (fields && story ? pick(story, fields) : story));
-    const storiesByExternalId = stories
-      .map((story, index) => [externalIds[index], story])
-      .filter(([externalId, story]) => story)
-      .reduce((acc, [externalId, story]) => {
-        console.log("coming inside reduce" , acc);
-        console.log("coming inside reduce" , story);
-        acc[externalId] = story;
-        return acc;
-      }, {});
-
     res
       .header("Cache-Control", "public,max-age=3600,s-maxage=3600,stale-while-revalidate=7200,stale-if-error=14400")
       .header("Vary", "Accept-Encoding")
