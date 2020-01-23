@@ -1,6 +1,6 @@
 {
   "name": "@quintype/api-middleware",
-  "version": "1.8.0",
+  "version": "1.7.0",
   "description": "Middleware between App and sketches APIs",
   "main": "index.js",
   "scripts": {
