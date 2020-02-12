@@ -6,7 +6,9 @@ async function bulkStoriesByExternalId(req, res) {
   const externalIds = req.query["external-ids"]
     ? req.query["external-ids"].split(",")
     : [];
+    console.log("externalIds============", externalIds, publisherConfig["sketches_host"])
   const fields = req.query["fields"] && req.query["fields"].split(",");
+
   const storyPromises = externalIds.map(externalId =>
     superagent
       .get(
@@ -17,6 +19,7 @@ async function bulkStoriesByExternalId(req, res) {
   const stories = (await Promise.all(storyPromises))
     .map(response => response && response.body)
     .map(storyResponse => {
+      console.log('----------------', storyResponse)
       const story = get(storyResponse, ["story"]);
       const alternative = get(story, ["alternative", "home", "default"]);
       if (alternative) {
