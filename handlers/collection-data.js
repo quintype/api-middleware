@@ -179,11 +179,9 @@ function filterItemType(collection, itemType) {
 async function cumulateCollection(client, collection, params = {}) {
   const collectionObject = collection.items
     ? filterItemType(collection, params["item-type"])
-    : (await Collection.getCollectionBySlug(
-        client,
-        collection.slug,
-        params
-      )).asJson();
+    : (
+        await Collection.getCollectionBySlug(client, collection.slug, params)
+      ).asJson();
   if (params["associated-metadata"]) {
     collectionObject["associated-metadata"] = params["associated-metadata"];
   }
@@ -279,49 +277,44 @@ async function collectionHandler(req, res, next, { config, client, params }) {
     purgeBundleItems,
     purgeMagazineItems
   };
+
   const collectionObject = await Collection.getCollectionBySlug(
     client,
     collectionSlug,
     initialParams,
     { depth }
   );
-  const collectionDataSet = await cumulateCollection(
-    client,
-    collectionObject.asJson(),
-    initialParams
-  );
 
-  const collectionRefactoredData = {
-    "updated-at": collectionDataSet["updated-at"],
-    slug: collectionDataSet["slug"],
-    name: collectionDataSet["name"],
-    summary: collectionDataSet["summary"],
-    id: collectionDataSet["id"],
-    "collection-date": collectionDataSet["collection-date"],
-    items: collectionDataSet["items"],
-    "total-count": collectionDataSet["total-count"],
-    metadata: collectionDataSet["metadata"]
-  };
+  if (collectionObject) {
+    const collectionDataSet = await cumulateCollection(
+      client,
+      collectionObject.asJson(),
+      initialParams
+    );
 
-  res
-    .header(
-      "Cache-Control",
-      "public,max-age=15,s-maxage=900,stale-while-revalidate=7200,stale-if-error=14400"
-    )
-    .header("Vary", "Accept-Encoding")
-    .header(
-      "Cache-Tag",
-      (collectionObject.cacheKeys(config.asJson()["publisher-id"]) || []).join(
-        ","
-      )
-    )
-    .header(
-      "Surrogate-Tag",
-      (collectionObject.cacheKeys(config.asJson()["publisher-id"]) || []).join(
-        " "
-      )
-    )
-    .json(collectionRefactoredData);
+    const collectionRefactoredData = {
+      "updated-at": collectionDataSet["updated-at"],
+      slug: collectionDataSet["slug"],
+      name: collectionDataSet["name"],
+      summary: collectionDataSet["summary"],
+      id: collectionDataSet["id"],
+      "collection-date": collectionDataSet["collection-date"],
+      items: collectionDataSet["items"],
+      "total-count": collectionDataSet["total-count"],
+      metadata: collectionDataSet["metadata"]
+    };
+    res
+      .header("Cache-Control","public,max-age=15,s-maxage=900,stale-while-revalidate=7200,stale-if-error=14400")
+      .header("Vary", "Accept-Encoding")
+      .header("Cache-Tag",(collectionObject.cacheKeys(config.asJson()["publisher-id"]) || []).join(","))
+      .header("Surrogate-Tag",(collectionObject.cacheKeys(config.asJson()["publisher-id"]) || []).join(" "))
+      .json(collectionRefactoredData);
+  } else {
+    res
+      .header("Vary", "Accept-Encoding")
+      .status(404)
+      .json({ message: "could not find collection" });
+  }
 }
 
 module.exports = { collectionHandler };
