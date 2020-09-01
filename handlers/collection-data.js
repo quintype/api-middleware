@@ -280,7 +280,7 @@ async function collectionHandler(req, res, next, { config, client, params }) {
 
   const collectionObject = await Collection.getCollectionBySlug(
     client,
-    collectionSlug,
+    encodeURIComponent(collectionSlug),
     initialParams,
     { depth }
   );
