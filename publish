@@ -1,0 +1,22 @@
+#!/bin/bash -e
+
+export CAN_PUBLISH="true"
+BRANCH=$(git symbolic-ref --short HEAD)
+
+if [ "$BRANCH" == "master" ];
+then
+  echo "#### Publishing Prod Version ####"
+  npm install
+  git diff --quiet || echo "Uncommitted changes present, can't proceed"
+  npm run test -- --watchAll=false
+  npm run docs
+  npx standard-version
+  npm run build:prod
+  git push --follow-tags origin "$BRANCH"
+  npm publish ./dist
+else
+  echo "#### Publishing Beta Version ####"
+  npx standard-version --prerelease "$BRANCH" --skip.changelog=true
+  git push --follow-tags origin "$BRANCH"
+  npm publish ./dist --tag beta
+fi
