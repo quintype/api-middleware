@@ -18,9 +18,9 @@
   "author": "Quintype Developers <dev-core@quintype.com>",
   "license": "ISC",
   "dependencies": {
-    "@quintype/backend": "1.20.4",
-    "@quintype/framework": "^3.9.0",
-    "superagent": "^5.2.1"
+    "@quintype/backend": "2.3.1",
+    "@quintype/framework": "^7.7.5",
+    "superagent": "^8.0.0"
   },
   "bugs": {
     "url": "https://github.com/quintype/api-middleware/issues"
