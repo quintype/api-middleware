@@ -18,5 +18,5 @@ else
   echo "#### Publishing Beta Version ####"
   npx standard-version --prerelease "$BRANCH" --skip.changelog=true
   git push --follow-tags origin "$BRANCH"
-  npm publish ./dist --tag beta
+  npm publish --tag beta
 fi
