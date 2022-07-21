@@ -26,7 +26,7 @@
     "url": "https://github.com/quintype/api-middleware/issues"
   },
   "homepage": "https://github.com/quintype/api-middleware#readme",
-  "devDependencies": {
-    "loadash": "^1.0.0"
+  "peerDependencies": {
+    "lodash": ">=4.17.0"
   }
 }
